@@ -161,13 +161,6 @@ func newRetryClient(opts Options) *req.Client {
 		opts.Timeout = defaultTimeout
 	}
 	client := req.NewClient().
-		// Sets the check for a successful response (a successful response is any 2XX code)
-		SetResultStateCheckFunc(func(resp *req.Response) req.ResultState {
-			if code := resp.StatusCode; 200 <= code && code < 300 {
-				return req.SuccessState
-			}
-			return req.ErrorState
-		}).
 		// Timeout
 		SetTimeout(opts.Timeout).
 		// Retry count
@@ -224,7 +217,7 @@ func responseErrorCause(response *req.Response, err error) error {
 	case response.Err != nil:
 		return response.Err
 	case response.IsErrorState():
-		return fmt.Errorf("error request %s with status %d", rawURL(response.Request), response.StatusCode)
+		return fmt.Errorf("error request %s %s with status %d", response.Request.Method, rawURL(response.Request), response.StatusCode)
 	case response.GetContentType() == JsonApplicationContentType && response.Body == nil:
 		return ErrResponseBodyNil
 	}
