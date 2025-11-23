@@ -15,6 +15,13 @@ const (
 	FilePermission      = 0644 // Default file permissions given on creation
 )
 
+type Entry byte
+
+const (
+	File Entry = iota
+	Directory
+)
+
 type Type string
 
 const (
