@@ -37,39 +37,49 @@ func ConsoleTraceWriter() zerolog.ConsoleWriter {
 
 // formatPrepare prepares log fields by extracting trace fields into the main message
 func formatPrepare(m map[string]interface{}) error {
+	// Extract trace messages
 	trace, ok := m[zerolog.ErrorFieldName].(map[string]any)
 	if !ok {
 		return nil
 	}
+	// Copy all non-trace fields to the main message
 	for k, v := range trace {
+		// Skip the trace field
 		if k == ErrorTraceFieldName {
 			continue
 		}
+		// Add the field to the main message without overwriting existing fields
+		// This will provide the first field found from TOP to BOTTOM precedence
 		if _, duplicate := m[k]; !duplicate {
 			m[k] = v
 		}
 	}
 
+	// Return nil to indicate no error
 	return nil
 }
 
 // formatExtra formats additional trace messages and appends them to the buffer
 func formatExtra(m map[string]interface{}, buffer *bytes.Buffer) error {
+	// Extract trace messages
 	trace, ok := m[zerolog.ErrorFieldName].(map[string]any)
 	if !ok {
 		return nil
 	}
 
+	// Check if the type is a slice
 	messages, ok := trace[ErrorTraceFieldName].([]any)
 	if !ok {
 		return nil
 	}
 
+	// Append each message to the buffer
 	for _, rawMsg := range messages {
 		if msg, ok := rawMsg.(string); ok {
 			buffer.WriteString(fmt.Sprintf("\n\t%s", msg))
 		}
 	}
 
+	// Return nil to indicate no error
 	return nil
 }

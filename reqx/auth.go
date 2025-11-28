@@ -16,21 +16,27 @@ var (
 	jwtParser = jwt.NewParser()
 )
 
+// authStore manages http requests that need bearer authentication
 type authStore interface {
+	// getValidToken returns a valid token, refreshing it if expired
 	getValidToken() (string, error)
 }
 
+// tokenAuthStore manages http requests that need bearer authentication with a fixed token
 type tokenAuthStore string
 
+// getValidToken returns the token stored in the store
 func (t *tokenAuthStore) getValidToken() (string, error) {
 	return string(*t), nil
 }
 
+// newTokenAuthStore creates a new tokenAuthStore with the provided token
 func newTokenAuthStore(token string) *tokenAuthStore {
 	return ptr.Of(tokenAuthStore(token))
 }
 
-// refreshableAuthStore manages http requests that need bearer authentication refreshing the token optimally (completely thread-safe for high throughput concurrent requests)
+// refreshableAuthStore manages http requests that need bearer authentication refreshing the token optimally
+// (completely thread-safe for high-throughput concurrent requests)
 type refreshableAuthStore struct {
 	client            *Client
 	identityReader    cred.IdentityReader
@@ -55,9 +61,10 @@ func newRefreshableAuthStore(client *Client, identityReader cred.IdentityReader,
 
 // getValidToken returns a valid token, refreshing it if expired
 func (as *refreshableAuthStore) getValidToken() (string, error) {
+	// Get current time
 	now := time.Now()
 
-	// Atomically get token and check if expired
+	// Atomically get a token and check if expired
 	token, isExpired := as.getTokenAndCheckExpiryAt(now)
 	if !isExpired {
 		return token, nil
@@ -124,26 +131,30 @@ func (as *refreshableAuthStore) setBearerToken(token string) {
 }
 
 // extractTokenExpiration parses a JWT token and returns its expiration time
-func extractTokenExpiration(tokenString string) (expiration time.Time) {
+func extractTokenExpiration(tokenString string) time.Time {
+	// Check if the token is blank
 	if stringsx.IsBlank(tokenString) {
-		return
+		return time.Time{}
 	}
 
+	// Parse the token
 	parsedToken, _, err := jwtParser.ParseUnverified(tokenString, jwt.MapClaims{})
 	if err != nil {
-		return
+		return time.Time{}
 	}
 
+	// Extract the expiration time
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return
+		return time.Time{}
 	}
 
+	// Check if the token has an expiration time
 	exp, err := claims.GetExpirationTime()
 	if err != nil || exp == nil {
-		return
+		return time.Time{}
 	}
 
-	expiration = exp.Time
-	return
+	// Return the expiration time
+	return exp.Time
 }

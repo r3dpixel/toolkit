@@ -36,11 +36,15 @@ func ToFile(imageSource image.Image, path string, format imgconv.Format) error {
 
 // ToBytes writes the image source to a byte array
 func ToBytes(imageSource image.Image, format imgconv.Format) ([]byte, error) {
+	// Calculate the size of the buffer
 	bounds := imageSource.Bounds()
 	size := bytex.Size(bounds.Dx()*bounds.Dy()*3) * bytex.B
+	// Create the buffer
 	buf := bytes.NewBuffer(make([]byte, 0, size))
+	// Write the image to the buffer
 	if err := To(imageSource, buf, format); err != nil {
 		return nil, err
 	}
+	// Return the buffer bytes
 	return buf.Bytes(), nil
 }

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+
+	"github.com/r3dpixel/toolkit/stringsx"
 )
 
 // Err containing a chain of causes (linked list of errors)
@@ -20,7 +22,18 @@ func Error() *Err {
 
 // Err returns the error message, implementing the error interface
 func (e *Err) Error() string {
-	return e.msg
+	// If there is no cause, return the message directly
+	if e.cause == nil {
+		return e.msg
+	}
+
+	// If the message is blank, return the cause's error message'
+	if stringsx.IsBlank(e.msg) {
+		return e.cause.Error()
+	}
+
+	// Return the error message, and the cause's error message (flows down the chain)
+	return e.msg + ": " + e.cause.Error()
 }
 
 // Unwrap returns the underlying cause error

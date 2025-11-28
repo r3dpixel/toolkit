@@ -46,6 +46,7 @@ func TestNextPowerOfTwo(t *testing.T) {
 		{name: "Input 0", input: 0, expected: 1},
 		{name: "Input 3", input: 3, expected: 4},
 		{name: "Input 9", input: 9, expected: 16},
+		{name: "Input 1024", input: 1024, expected: 2048},
 	}
 
 	for _, tc := range testCases {
@@ -298,133 +299,7 @@ func TestMapTo(t *testing.T) {
 	}
 }
 
-func TestMergeStrings(t *testing.T) {
-	testCases := []struct {
-		name     string
-		strs1    []string
-		strs2    []string
-		expected []string
-	}{
-		{
-			name:     "Empty slices",
-			strs1:    []string{},
-			strs2:    []string{},
-			expected: []string{},
-		},
-		{
-			name:     "First empty, second has values",
-			strs1:    []string{},
-			strs2:    []string{"a", "b"},
-			expected: []string{"a", "b"},
-		},
-		{
-			name:     "First has values, second empty",
-			strs1:    []string{"x", "y"},
-			strs2:    []string{},
-			expected: []string{"x", "y"},
-		},
-		{
-			name:     "No duplicates",
-			strs1:    []string{"a", "b"},
-			strs2:    []string{"c", "d"},
-			expected: []string{"a", "b", "c", "d"},
-		},
-		{
-			name:     "With duplicates",
-			strs1:    []string{"a", "b", "c"},
-			strs2:    []string{"b", "d", "a"},
-			expected: []string{"a", "b", "c", "d"},
-		},
-		{
-			name:     "All duplicates",
-			strs1:    []string{"x", "y"},
-			strs2:    []string{"x", "y"},
-			expected: []string{"x", "y"},
-		},
-		{
-			name:     "Empty strings included",
-			strs1:    []string{"", "a"},
-			strs2:    []string{"b", ""},
-			expected: []string{"", "a", "b"},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := Merge(tc.strs1, tc.strs2)
-			assert.ElementsMatch(t, tc.expected, result)
-			assert.Len(t, result, len(tc.expected))
-		})
-	}
-}
-
-func TestMergeFloats(t *testing.T) {
-	testCases := []struct {
-		name     string
-		floats1  []float64
-		floats2  []float64
-		expected []float64
-	}{
-		{
-			name:     "Empty slices",
-			floats1:  []float64{},
-			floats2:  []float64{},
-			expected: []float64{},
-		},
-		{
-			name:     "First empty, second has values",
-			floats1:  []float64{},
-			floats2:  []float64{1.5, 2.7},
-			expected: []float64{1.5, 2.7},
-		},
-		{
-			name:     "First has values, second empty",
-			floats1:  []float64{3.14, 2.71},
-			floats2:  []float64{},
-			expected: []float64{3.14, 2.71},
-		},
-		{
-			name:     "No duplicates",
-			floats1:  []float64{1.1, 2.2},
-			floats2:  []float64{3.3, 4.4},
-			expected: []float64{1.1, 2.2, 3.3, 4.4},
-		},
-		{
-			name:     "With duplicates",
-			floats1:  []float64{1.5, 2.5, 3.5},
-			floats2:  []float64{2.5, 4.5, 1.5},
-			expected: []float64{1.5, 2.5, 3.5, 4.5},
-		},
-		{
-			name:     "All duplicates",
-			floats1:  []float64{1.23, 4.56},
-			floats2:  []float64{1.23, 4.56},
-			expected: []float64{1.23, 4.56},
-		},
-		{
-			name:     "Zero values included",
-			floats1:  []float64{0.0, 1.1},
-			floats2:  []float64{2.2, 0.0},
-			expected: []float64{0.0, 1.1, 2.2},
-		},
-		{
-			name:     "Negative values",
-			floats1:  []float64{-1.5, 2.5},
-			floats2:  []float64{-2.5, 1.5},
-			expected: []float64{-1.5, 2.5, -2.5, 1.5},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := Merge(tc.floats1, tc.floats2)
-			assert.ElementsMatch(t, tc.expected, result)
-			assert.Len(t, result, len(tc.expected))
-		})
-	}
-}
-
-func TestMergeStableStrings(t *testing.T) {
+func TestDeduplicateStableStrings(t *testing.T) {
 	testCases := []struct {
 		name     string
 		strs1    []string
@@ -477,14 +352,14 @@ func TestMergeStableStrings(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := MergeStable(tc.strs1, tc.strs2)
+			result := DeduplicateStable(tc.strs1, tc.strs2)
 			assert.Equal(t, tc.expected, result)
 			assert.Len(t, result, len(tc.expected))
 		})
 	}
 }
 
-func TestMergeStableFloats(t *testing.T) {
+func TestDeduplicateStableFloats(t *testing.T) {
 	testCases := []struct {
 		name     string
 		floats1  []float64
@@ -543,7 +418,7 @@ func TestMergeStableFloats(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := MergeStable(tc.floats1, tc.floats2)
+			result := DeduplicateStable(tc.floats1, tc.floats2)
 			assert.Equal(t, tc.expected, result)
 			assert.Len(t, result, len(tc.expected))
 		})

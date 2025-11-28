@@ -58,29 +58,39 @@ func IsNotBlank(value string) bool {
 
 // IsBlank Checks if the string is empty or whitespace
 func IsBlank(value string) bool {
+	// If the string is empty, return true
 	if len(value) == 0 {
 		return true
 	}
 
+	// Check whitespace
 	for i := 0; i < len(value); i++ {
+		// Get the character
 		c := value[i]
+		// If not ASCII, use the full Unicode check
 		if c >= utf8.RuneSelf {
 			return isBlankUnicode(value[i:])
 		}
+		// ASCII fast path check
 		if asciiSpace[c] == 0 {
+			// Non-whitespace character found, return false
 			return false
 		}
 	}
+	// If no non-whitespace characters were found, return true
 	return true
 }
 
-// isBlankUnicode slow path for full unicode whitespace check
+// isBlankUnicode slow path for full Unicode whitespace check
 func isBlankUnicode(value string) bool {
+	// Check for non-whitespace
 	for _, r := range value {
+		// If a non-whitespace character is found, return false
 		if !unicode.IsSpace(r) {
 			return false
 		}
 	}
+	// If no non-whitespace characters were found, return true
 	return true
 }
 
@@ -151,22 +161,28 @@ func IsAsciiSpace(c byte) bool {
 	return asciiSpace[c] == 1
 }
 
-// initQuoteReplacer creates a string replacer that will correct all abnormal quotes, apostrophes or commas symbols
+// initQuoteReplacer creates a string replacer that will correct all abnormal quotes, apostrophes, or commas symbols
 func initQuoteReplacer() *strings.Replacer {
+	// Create a slice of pairs for replacing all abnormal quotes, apostrophes, or commas
 	noSymbols := len(symbols.AbnormalQuotes) + len(symbols.AbnormalApostrophes) + len(symbols.AbnormalCommas)
+	// Create the replacer (the length of the pairs is twice the number of abnormal symbols)
 	pairs := make([]string, 0, 2*noSymbols)
 
+	// Add pairs for replacing all abnormal quotes
 	for _, char := range symbols.AbnormalQuotes {
 		pairs = append(pairs, string(char), symbols.Quote)
 	}
 
+	// Add pairs for replacing all abnormal apostrophes
 	for _, char := range symbols.AbnormalApostrophes {
 		pairs = append(pairs, string(char), symbols.Apostrophe)
 	}
 
+	// Add pairs for replacing all abnormal commas
 	for _, char := range symbols.AbnormalCommas {
 		pairs = append(pairs, string(char), symbols.Comma)
 	}
 
+	// Create the replacer
 	return strings.NewReplacer(pairs...)
 }

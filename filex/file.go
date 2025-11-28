@@ -93,17 +93,20 @@ func CopyBuffered(r io.Reader, w io.Writer) error {
 
 // CopyFile copies the src file to the dst, using a buffered read/write
 func CopyFile(src, dst string) error {
+	// Open the source file
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer srcFile.Close()
 
+	// Create the destination file
 	dstFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
 	defer dstFile.Close()
 
+	// Copy the contents from the source file to the destination file buffered
 	return CopyBuffered(srcFile, dstFile)
 }

@@ -203,7 +203,7 @@ func TestCodedError(t *testing.T) {
 				return CodedError[int]().Code(400).Wrap(inner).Msg("bad request")
 			},
 			wantCode:  400,
-			wantMsg:   "bad request",
+			wantMsg:   "bad request: ",
 			wantField: "inner_key",
 			wantVal:   "inner_val",
 		},

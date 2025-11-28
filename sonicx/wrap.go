@@ -37,12 +37,26 @@ func (w *Wrap) GetByPath(path ...any) *Wrap {
 }
 
 // String extracts a string value from the Wrap (with copy)
+// Sonic already handles copy
 func (w *Wrap) String() string {
+	// Get the type value safely
 	t := w.TypeSafe()
+
+	// Get the string value of the node
 	raw, _ := w.Node.String()
+
+	// If the type is string or number, clone the string (to prevent references to the entire node being cached and leaking memory)
+	// These are problematic, because they don't respect the sonic CopyOnString flag, keeping references to internal node buffers
+	//        case types.V_STRING, _V_NUMBER  : return self.toString(), nil
+	//        case _V_ANY:
+	//             case string : return v, nil
+	//             case json.Number: return v.String(), nil
 	if t == ast.V_ANY || t == ast.V_STRING || t == ast.V_NUMBER {
+		// Clone the string
 		return strings.Clone(raw)
 	}
+
+	// Return the raw string
 	return raw
 }
 

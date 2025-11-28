@@ -8,6 +8,7 @@ import (
 
 	"github.com/imroc/req/v3"
 	"github.com/r3dpixel/toolkit/cred"
+	"github.com/r3dpixel/toolkit/stringsx"
 )
 
 const (
@@ -69,6 +70,7 @@ type Client struct {
 
 // NewClient creates a new wrapped client
 func NewClient(opts Options, configs ...Config) *Client {
+	// Set the default auth refresh buffer if not set
 	if opts.AuthRefreshBuffer <= 0 {
 		opts.AuthRefreshBuffer = defaultAuthRefreshBuffer
 	}
@@ -96,26 +98,37 @@ func NewClient(opts Options, configs ...Config) *Client {
 
 // RegisterAuth registers an authentication provider using a refreshable token with the given label
 func (c *Client) RegisterAuth(serviceLabel string, identityReader cred.IdentityReader, refreshFunc func(*Client, cred.Identity) (string, error)) *Client {
+	// Lock the auths map
 	c.authsMu.Lock()
 	defer c.authsMu.Unlock()
+
+	// Create the auth manager
 	c.auths[serviceLabel] = newRefreshableAuthStore(c, identityReader, refreshFunc, c.authRefreshBuffer)
 
+	// Return the client
 	return c
 }
 
 // RegisterToken registers an authentication provider using a fixed token with the given label
 func (c *Client) RegisterToken(serviceLabel string, token string) *Client {
+	// Lock the auths map
 	c.authsMu.Lock()
 	defer c.authsMu.Unlock()
+
+	// Create the auth manager
 	c.auths[serviceLabel] = newTokenAuthStore(token)
 
+	// Return the client
 	return c
 }
 
 // UnregisterAuth unregisters an authentication provider with the given label
 func (c *Client) UnregisterAuth(serviceLabel string) {
+	// Lock the auths map
 	c.authsMu.Lock()
 	defer c.authsMu.Unlock()
+
+	// Delete the auth manager
 	delete(c.auths, serviceLabel)
 }
 
@@ -126,16 +139,20 @@ func (c *Client) R() *req.Request {
 
 // AR creates an authenticated request with automatic token refresh
 func (c *Client) AR(serviceLabel string) *req.Request {
+	// Get the auth manager
 	c.authsMu.RLock()
 	authManager, exists := c.auths[serviceLabel]
 	c.authsMu.RUnlock()
 
+	// Return an error if the auth manager does not exist
 	if !exists {
+		// Set the error on the request with the hook
 		return c.client.R().OnAfterResponse(func(client *req.Client, resp *req.Response) error {
 			return fmt.Errorf("auth manager for service %s does not exist", serviceLabel)
 		})
 	}
 
+	// Get the token
 	token, err := authManager.getValidToken()
 	if err != nil {
 		return c.client.R().OnAfterResponse(func(client *req.Client, resp *req.Response) error {
@@ -143,11 +160,13 @@ func (c *Client) AR(serviceLabel string) *req.Request {
 		})
 	}
 
+	// Return the request builder with the token set
 	return c.client.R().SetBearerAuthToken(token)
 }
 
 // newRetryClient returns an http client with a retry mechanism
 func newRetryClient(opts Options) *req.Client {
+	// Set default values if needed
 	if opts.RetryCount < 0 {
 		opts.RetryCount = defaultRetryCount
 	}
@@ -160,6 +179,8 @@ func newRetryClient(opts Options) *req.Client {
 	if opts.Timeout <= 0 {
 		opts.Timeout = defaultTimeout
 	}
+
+	// Create the client
 	client := req.NewClient().
 		// Timeout
 		SetTimeout(opts.Timeout).
@@ -208,26 +229,41 @@ func newRetryClient(opts Options) *req.Client {
 	return client
 }
 
+// responseErrorCause returns the error cause for the given response (safely wraps the response)
+// Only possible cases:
+// - response == nil, err != nil
+// - response != nil, err != nil
+// - response != nil, err == nil
+// There is NO case where both response and err are nil
 func responseErrorCause(response *req.Response, err error) error {
 	switch {
+	// If err is present, return it
 	case err != nil:
 		return err
+	// If the response is nil, return an error
 	case response == nil:
 		return ErrResponseNil
+	// If the response has an error nested, return it
 	case response.Err != nil:
 		return response.Err
+	// If the response has an error HTTP status code (defined per the custom logic), return it
 	case response.IsErrorState():
 		return fmt.Errorf("error request %s %s with status %d", response.Request.Method, rawURL(response.Request), response.StatusCode)
+	// If the response has a body and the content type is JSON, return an error if the body is nil
 	case response.GetContentType() == JsonApplicationContentType && response.Body == nil:
 		return ErrResponseBodyNil
 	}
 
+	// Return nil if no error
 	return nil
 }
 
+// rawURL returns the raw URL of the given request
 func rawURL(req *req.Request) string {
+	// Return an empty string if the request is nil
 	if req == nil {
-		return "[]"
+		return stringsx.Empty
 	}
+	// Return the raw URL
 	return req.RawURL
 }
