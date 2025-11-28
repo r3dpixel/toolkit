@@ -48,7 +48,7 @@ func formatPrepare(m map[string]interface{}) error {
 		if k == ErrorTraceFieldName {
 			continue
 		}
-		// Add the field to the main message without overwriting existing fields
+		// InsertIter the field to the main message without overwriting existing fields
 		// This will provide the first field found from TOP to BOTTOM precedence
 		if _, duplicate := m[k]; !duplicate {
 			m[k] = v

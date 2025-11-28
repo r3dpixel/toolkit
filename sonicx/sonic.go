@@ -91,9 +91,9 @@ func ArrayToMap[T comparable](node *Wrap, filter func(T) bool, extractor func(*W
 		if item := node.Index(i); item.Valid() {
 			// Extract the value using the extractor func
 			value := extractor(item)
-			// Add the value to the ordered map if it passes the filter
+			// InsertIter the value to the ordered map if it passes the filter
 			if filter == nil || filter(value) {
-				// Add the value to the ordered map
+				// InsertIter the value to the ordered map
 				values.Set(value, structx.Empty)
 			}
 		}
@@ -128,7 +128,7 @@ func ArrayToSlice[T any](node *Wrap, filter func(T) bool, extractor func(*Wrap) 
 		if item := node.Index(i); item.Valid() {
 			// Extract the value using the extractor func
 			value := extractor(item)
-			// Add the value to the slice if it passes the filter
+			// InsertIter the value to the slice if it passes the filter
 			if filter == nil || filter(value) {
 				values = append(values, value)
 			}

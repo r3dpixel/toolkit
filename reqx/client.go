@@ -78,7 +78,7 @@ func NewClient(opts Options, configs ...Config) *Client {
 	// Create the retryable client
 	client := newRetryClient(opts)
 
-	// Add response error checking callback
+	// InsertIter response error checking callback
 	client.OnAfterResponse(func(c *req.Client, resp *req.Response) error {
 		return responseErrorCause(resp, resp.Err)
 	})

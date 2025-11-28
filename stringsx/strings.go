@@ -168,17 +168,17 @@ func initQuoteReplacer() *strings.Replacer {
 	// Create the replacer (the length of the pairs is twice the number of abnormal symbols)
 	pairs := make([]string, 0, 2*noSymbols)
 
-	// Add pairs for replacing all abnormal quotes
+	// InsertIter pairs for replacing all abnormal quotes
 	for _, char := range symbols.AbnormalQuotes {
 		pairs = append(pairs, string(char), symbols.Quote)
 	}
 
-	// Add pairs for replacing all abnormal apostrophes
+	// InsertIter pairs for replacing all abnormal apostrophes
 	for _, char := range symbols.AbnormalApostrophes {
 		pairs = append(pairs, string(char), symbols.Apostrophe)
 	}
 
-	// Add pairs for replacing all abnormal commas
+	// InsertIter pairs for replacing all abnormal commas
 	for _, char := range symbols.AbnormalCommas {
 		pairs = append(pairs, string(char), symbols.Comma)
 	}

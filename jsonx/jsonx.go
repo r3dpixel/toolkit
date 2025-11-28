@@ -162,7 +162,7 @@ func ExtractJsonFieldNames(v any) []string {
 		parts := strings.Split(jsonTag, ",")
 		fieldName := parts[0]
 
-		// Add the field name to the list
+		// InsertIter the field name to the list
 		if stringsx.IsNotBlank(fieldName) {
 			fields = append(fields, fieldName)
 		}

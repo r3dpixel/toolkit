@@ -151,7 +151,7 @@ func TestSizeArithmetic(t *testing.T) {
 		op   func() Size
 		want Size
 	}{
-		{"Add sizes", func() Size { return 1*MB + 500*KB }, 1500000},
+		{"InsertIter sizes", func() Size { return 1*MB + 500*KB }, 1500000},
 		{"Subtract sizes", func() Size { return 2*GB - 1*GB }, 1000000000},
 		{"Multiply size", func() Size { return 3 * MB }, 3000000},
 		{"Divide size", func() Size { return 10 * GB / 5 }, 2000000000},
