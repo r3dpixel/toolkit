@@ -3,6 +3,7 @@ package templater
 import (
 	"strings"
 
+	"github.com/r3dpixel/toolkit/iterx"
 	"github.com/r3dpixel/toolkit/lexer"
 	"github.com/r3dpixel/toolkit/stringsx"
 )
@@ -61,7 +62,7 @@ func New[T any](tokens ...Token[T]) *Templater[T] {
 
 	// Build the lexer from tokens
 	for _, token := range tokens {
-		lex.InsertIter(lexer.Runes(token.GetKey()), token.GetExtractor())
+		lex.InsertIter(iterx.Runes(token.GetKey()), token.GetExtractor())
 	}
 
 	// Return the new Templater instance
