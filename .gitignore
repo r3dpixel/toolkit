@@ -1,0 +1,5 @@
+.idea
+.DS_Store
+
+CLAUDE.md
+build-and-push.sh
